@@ -5,7 +5,7 @@ describe ( "Estado de proceso", () => {
 
     it("Acá se guardan los seis estados del proceso", () => {
         expect (Object.values(EstadodeProceso)).toEqual([
-            "Nuevo", "Esperando memoria", "Listo", "Ejecutando", "Bloqueado", "Terminado"
+            "Nuevo", "Esperando memoria", "Ejecutando","Listo", "Bloqueado", "Terminado"
     ]);
 });
 

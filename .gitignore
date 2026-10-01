@@ -1,9 +1,4 @@
-# Dependencias de Node (¡Muy importante!)
 node_modules/
-
-# Archivos de configuración local o secretos
 .env
-
-# Archivos del sistema operativo
 .DS_Store
 Thumbs.db

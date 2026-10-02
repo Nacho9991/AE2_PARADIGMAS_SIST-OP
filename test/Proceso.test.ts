@@ -45,3 +45,36 @@ describe("memoria requerida invalida", () => {
     });
 });
 
+describe("tiempo de CPU invalido", () => {
+    test("un tiempo de CPU que sea igual a 0 no es valida", ()=>{
+        expect(new Proceso(1, 200, 0).esValido()).toBe(false);
+    });
+    test("un tiempo de CPU a que sea igual a negativo no es valido", ()=>{
+        expect(new Proceso(1, 200, -5).esValido()).toBe(false);
+    });
+    test("un tiempo de CPU que sea decimal no es valido", ()=>{
+        expect(new Proceso(1, 200, 5.5).esValido()).toBe(false);
+    });
+    test("un tiempo de CPU que no sea un numero no es valido", ()=>{
+        expect(new Proceso(1, 200, NaN).esValido()).toBe(false);
+    });
+});
+
+describe("estado inicial", () => {
+    test("Un proceso recien creado debe estar en estado nuevo",()=>{
+        const p=new Proceso(1, 200, 5)
+        expect(p.getEstado()).toBe(EstadodeProceso.Nuevo)
+    })
+    test("Un proceso recien creado tiene todo su cpu pendiente",()=>{
+        const p=new Proceso(1, 200, 5)
+        expect(p.getCpuRestante()).toBe(5)
+    })
+    test("Un proceso recien creado tiene le quantum consumido en cero",()=>{
+        const p=new Proceso(1, 200, 5)
+        expect(p.getQuantumConsumido()).toBe(0)
+    })
+    test("Un proceso recien creado no tiene bloqueo pendiente",()=>{
+        const p = new Proceso(1, 200, 5)
+        expect(p.getBloqueoRestante()).toBe(0)
+    })
+});

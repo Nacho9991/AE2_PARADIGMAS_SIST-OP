@@ -1,5 +1,6 @@
 import {EstadodeProceso} from "./EstadodeProceso";
 import {IProcesoConsulta} from "./IProcesoConsulta"
+import{IProcesoControl} from "./IProcesoControl"
 export class Proceso{
     private readonly pid: number;
     private readonly memoriaRequerida: number;
@@ -53,4 +54,20 @@ export class Proceso{
         return pidValido && memoriaValida && cpuValido;
     }
     
+    private validarTransicion(nuevoEstado: EstadodeProceso): void{
+        const noEstaTerminado = this.estado !== EstadodeProceso.Terminado;
+        noEstaTerminado && (this.estado = nuevoEstado);
+    }
+    esperarMemoria():void{
+        this.validarTransicion(EstadodeProceso.Esperando_Memoria);
+    }
+    admitir():void{
+        this.validarTransicion(EstadodeProceso.Listo);
+    }
+    despachar():void{
+        this.validarTransicion(EstadodeProceso.Ejecutando);
+    }
+    terminar():void{
+        this.validarTransicion(EstadodeProceso.Terminado);
+    }
 }

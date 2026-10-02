@@ -7,9 +7,9 @@ describe("Proceso", () => {
         const p = new Proceso(1, 200,5);
         expect(p.getPid()).toBe(1);
         expect(p.getMemoriaRequerida()).toBe(200)
-        expect(p.getCpuTotal()).toBe                            
+        expect(p.getCpuTotal()).toBe(5)                           
     });
-    test("si hago proceso con datos corretos es valido",()=>{
+    test("si hago proceso con datos correctos es valido",()=>{
         const p=new Proceso(1, 200, 5);
         expect(p.esValido()).toBe(true);
     });
@@ -37,8 +37,8 @@ describe("memoria requerida invalida", () => {
     test("una memoria que sea igual a negativa no es valido", ()=>{
         expect(new Proceso(1, -9, 5).esValido()).toBe(false);
     });
-    test("una meoria que sea decimal no es valido", ()=>{
-        expect(new Proceso(1, -3.3, 5).esValido()).toBe(false);
+    test("una memoria que sea decimal no es valido", ()=>{
+        expect(new Proceso(1, 3.3, 5).esValido()).toBe(false);
     });
     test("una memoria que no sea un numero no es valido", ()=>{
         expect(new Proceso(1, NaN, 5).esValido()).toBe(false);
@@ -69,7 +69,7 @@ describe("estado inicial", () => {
         const p=new Proceso(1, 200, 5)
         expect(p.getCpuRestante()).toBe(5)
     })
-    test("Un proceso recien creado tiene le quantum consumido en cero",()=>{
+    test("Un proceso recien creado tiene el quantum consumido en cero",()=>{
         const p=new Proceso(1, 200, 5)
         expect(p.getQuantumConsumido()).toBe(0)
     })

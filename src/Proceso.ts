@@ -1,4 +1,5 @@
-import {EstadodeProceso} from"./EstadodeProceso";
+import {EstadodeProceso} from "./EstadodeProceso";
+import {IProcesoConsulta} from "./IProcesoConsulta"
 export class Proceso{
     private readonly pid: number;
     private readonly memoriaRequerida: number;

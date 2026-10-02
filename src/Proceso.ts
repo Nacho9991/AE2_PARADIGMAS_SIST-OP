@@ -47,27 +47,31 @@ export class Proceso{
     getBloqueoRestante(): number {
         return this.bloqueoRestante;
     }
-    esValido(): boolean{
-        const pidValido = this.pid > 0 && this.pid % 1 === 0;
+
+    
+    esValido():boolean {
+        const pidValido = this.pid > 0 && this.pid % 1 ===0;
         const memoriaValida = this.memoriaRequerida > 0 && this.memoriaRequerida % 1 === 0;
         const cpuValido = this.cpuTotal > 0 && this.cpuTotal % 1 === 0;
         return pidValido && memoriaValida && cpuValido;
     }
-    
-    private validarTransicion(nuevoEstado: EstadodeProceso): void{
-        const noEstaTerminado = this.estado !== EstadodeProceso.Terminado;
-        noEstaTerminado && (this.estado = nuevoEstado);
+
+    esperarMemoria(): void {
+        const puedeEsperar = this.estado === EstadodeProceso.Nuevo;
+        puedeEsperar && (this.estado = EstadodeProceso.Esperando_Memoria)
+
     }
-    esperarMemoria():void{
-        this.validarTransicion(EstadodeProceso.Esperando_Memoria);
+    admitir(): void{
+        const puedeAdmitir = this.estado === EstadodeProceso.Nuevo;
+        this.estado == EstadodeProceso.Esperando_Memoria;
+        puedeAdmitir && (this.estado = EstadodeProceso.Listo);
     }
-    admitir():void{
-        this.validarTransicion(EstadodeProceso.Listo);
+    despachar(): void{
+        const puedeDespachar = this.estado === EstadodeProceso.Listo;
+        puedeDespachar && (this.estado = EstadodeProceso.Ejecutando);
     }
-    despachar():void{
-        this.validarTransicion(EstadodeProceso.Ejecutando);
-    }
-    terminar():void{
-        this.validarTransicion(EstadodeProceso.Terminado);
+    terminar(): void{
+        const puedeTerminar = this.estado === EstadodeProceso.Ejecutando;
+        puedeTerminar && (this.estado = EstadodeProceso.Terminado);
     }
 }

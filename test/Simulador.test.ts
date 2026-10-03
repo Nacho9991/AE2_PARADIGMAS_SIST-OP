@@ -46,4 +46,43 @@ describe("Inicio de la simulacion", () => {
         expect(mapa[0].estaLibre()).toBe(true);
     });
     
-})
+});
+
+
+describe("Carga de lotes de procesos", () => {
+    test("Registra un proceso correctamente con estado inicial nuevo", ()=>{
+        const sim = new Simulador (1024, 5);
+        sim.registrarProceso(1, 256, 10);
+
+        expect(sim.getProcesos()).toHaveLength(1);
+        const proceso = sim.getProcesos()[0];
+        expect(proceso.getPid()).toBe(1);
+        expect(proceso.getMemoriaRequerida()).toBe(256);
+        expect(proceso.getCpuTotal()).toBe(10);
+    });
+
+    test("ignora procesosi el PID ya existe", ()=>{
+        const sim = new Simulador (1024, 5);
+        sim.registrarProceso(1, 256, 10);
+        sim.registrarProceso(1, 128, 5);
+
+        expect(sim.getProcesos()).toHaveLength(1);
+        expect(sim.getProcesos()[0].getMemoriaRequerida()).toBe(256);
+    });
+
+    test("ignora proceso requiere mas memoria que el total del siguente", ()=>{
+        const sim = new Simulador (512, 5);
+        sim.registrarProceso(1, 1024, 10)
+        expect(sim.getProcesos()).toHaveLength(0);
+    });
+
+    test("ignora proceso con parametros no enteros o menores/iguales a cero", ()=>{
+        const sim = new Simulador (1024, 5);
+        sim.registrarProceso(0, 256, 10)
+        sim.registrarProceso(1, -256, 10)
+        sim.registrarProceso(2, 256, 0)
+        sim.registrarProceso(3, 256.5, 10)
+        
+        expect(sim.getProcesos()).toHaveLength(0);
+    });
+});

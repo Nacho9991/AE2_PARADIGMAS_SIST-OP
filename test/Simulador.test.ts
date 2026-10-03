@@ -18,6 +18,9 @@ describe("Inicio de la simulacion", () => {
         expect(simNegativa.esValido()).toBe(false);
         expect(simCero.esValido()).toBe(false)
         expect(simFlotante.esValido()).toBe(false);
+
+        expect(simCero.getMapaMemoria()).toHaveLength(0);
+
     });
 
     test("rechaza configuracion con quantum menor o igual a cero o flotante", ()=>{
@@ -28,5 +31,19 @@ describe("Inicio de la simulacion", () => {
         expect(simNegativa.esValido()).toBe(false);
         expect(simCero.esValido()).toBe(false)
         expect(simFlotante.esValido()).toBe(false);
+        
+        expect(simCero.getMapaMemoria()).toHaveLength(0);
     });
+
+    test("Inicia con las colas vacias y un unico bloque libre que cubre toda la memoria", ()=>{
+        const sim = new Simulador (1024, 5);
+        expect(sim.getProcesos()).toHaveLength(0);
+        
+        const mapa = sim.getMapaMemoria();
+        expect(mapa).toHaveLength(1);
+        expect(mapa[0].getInicio()).toBe(0);
+        expect(mapa[0].getTamanio()).toBe(1024);
+        expect(mapa[0].estaLibre()).toBe(true);
+    });
+    
 })

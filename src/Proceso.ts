@@ -19,49 +19,32 @@ export class Proceso{
         this.bloqueoRestante = 0
         this.estado = EstadodeProceso.Nuevo;
     }
-    
+
     getPid(): number {
-        return this.pid;
+    return this.pid;
     }
-
     getMemoriaRequerida(): number {
-        return this.memoriaRequerida;
+    return this.memoriaRequerida;
     }
-
     getCpuTotal(): number {
-        return this.cpuTotal;
+    return this.cpuTotal;
     }
-    
     getEstado(): EstadodeProceso {
-        return this.estado;
+    return this.estado;
     }
-
     getCpuRestante(): number {
-        return this.cpuRestante;
+    return this.cpuRestante;
     }
-
     getQuantumConsumido(): number {
-        return this.quantumConsumido;
+    return this.quantumConsumido;
     }
-
     getBloqueoRestante(): number {
-        return this.bloqueoRestante;
+    return this.bloqueoRestante;
     }
-
-    private setEstado(nuevoEstado: EstadodeProceso): void{
-        this.estado = nuevoEstado;
-    }
-    esValido():boolean {
-        const pidValido = this.getPid > 0 && this.getPid % 1 ===0;
-        const memoriaValida = this.getMemoriaRequerida > 0 && this.getMemoriaRequerida % 1 === 0;
-        const cpuValido = this.getCpuTotal > 0 && this.getCpuTotal % 1 === 0;
-        return pidValido && memoriaValida && cpuValido;
-    }
-
-    // Setter privado: centraliza la mutación del estado (doble encapsulamiento)
     private setEstado(nuevoEstado: EstadodeProceso): void {
         this.estado = nuevoEstado;
     }
+
 
     esValido(): boolean {
         const pidValido = this.getPid() > 0 && this.getPid() % 1 === 0;
@@ -69,25 +52,23 @@ export class Proceso{
         const cpuValido = this.getCpuTotal() > 0 && this.getCpuTotal() % 1 === 0;
         return pidValido && memoriaValida && cpuValido;
     }
-
+    
     esperarMemoria(): void {
         const puedeEsperar = this.getEstado() === EstadodeProceso.Nuevo;
         puedeEsperar && this.setEstado(EstadodeProceso.Esperando_Memoria);
     }
-
     admitir(): void {
-        const puedeAdmitir = this.getEstado() === EstadodeProceso.Nuevo
+        const puedeAdmitir = this.getEstado() === EstadodeProceso.Nuevo || 
         this.getEstado() === EstadodeProceso.Esperando_Memoria;
         puedeAdmitir && this.setEstado(EstadodeProceso.Listo);
     }
-
     despachar(): void {
         const puedeDespachar = this.getEstado() === EstadodeProceso.Listo;
         puedeDespachar && this.setEstado(EstadodeProceso.Ejecutando);
     }
-
     terminar(): void {
         const puedeTerminar = this.getEstado() === EstadodeProceso.Ejecutando;
         puedeTerminar && this.setEstado(EstadodeProceso.Terminado);
-    }
+}
+
 }

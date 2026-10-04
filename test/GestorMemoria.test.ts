@@ -52,4 +52,48 @@ describe("GestorMemoria", () => {
         
         
     })
+
+    test("libera un bloque ocupado dejando el espacio disponible", ()=>{
+        const gestor = new GestorMemoria (1024)
+        gestor.asignar(1, 256)
+        gestor.liberar(1)
+    
+        expect(gestor.getBloques()).toHaveLength(1);
+        expect(gestor.getBloques()[0].estaLibre()).toBe(true);
+        expect(gestor.getBloques()[0].getTamanio()).toBe(1024);
+    })
+
+    test("fusiona bloques contiguos al liberar en el medio de otros libres", ()=>{
+        const gestor = new GestorMemoria (1000);
+        gestor.asignar(1, 200)
+        gestor.asignar(2, 300)
+        gestor.asignar(3, 500)
+
+        gestor.liberar(2)
+        expect(gestor.getBloques()).toHaveLength(3)
+        expect(gestor.getBloques()[1].estaLibre()).toBe(true)
+
+        gestor.liberar(1)
+        expect(gestor.getBloques()).toHaveLength(2)
+        expect(gestor.getBloques()[0].getTamanio()).toBe(500)
+        expect(gestor.getBloques()[0].estaLibre()).toBe(true)
+
+        gestor.liberar(3)
+        expect(gestor.getBloques()).toHaveLength(1)
+        expect(gestor.getBloques()[0].getTamanio()).toBe(1000)
+        expect(gestor.getBloques()[0].estaLibre()).toBe(true)
+
+
+    })
+
+    test("no realiza cambios si se intenta liberar un  PID inexistente", ()=>{
+        const gestor = new GestorMemoria (1024);
+        gestor.asignar(1, 256)
+        gestor.asignar(999)
+
+        expect(gestor.getBloques()).toHaveLength(2)
+        expect(gestor.getBloques()[0].getPidAsignado()).toBe(1)
+
+
+    })
 })

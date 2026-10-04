@@ -1,5 +1,6 @@
 import { BloqueMemoria } from"../src/BloqueMemoria";
-export class GestorMemoria {
+import {IGestorMemoria} from "../IGestorMemoria"
+export class GestorMemoria implements IGestorMemoria {
     private readonly memoriaTotal: number;
     private bloques: BloqueMemoria[];
 
@@ -17,7 +18,7 @@ export class GestorMemoria {
         this.bloques = nuevosBloques;
     }
 
-
+//leer
     asignar(pid: number, tamanioRequerido: number): boolean{
         let bloqueObjetivoIndex: number = -1; 
 
@@ -48,6 +49,32 @@ export class GestorMemoria {
         })()
 
         return hayEspacio
+    }
+//leer
+    liberar(pid: number): void {
+        const bloquesActualizados = this.getBloques().map((b) =>
+            b.getPidAsignado() === pid
+                ? new BloqueMemoria(b.getInicio(), b.getTamanio())
+                : b
+        );
+
+        const fusionados: BloqueMemoria[] = []
+
+        for (const actual of bloquesActualizados) {
+            const anterior = fusionados.length > 0 ? fusionados[fusionados.length - 1] : undefined;
+            const sePuedenUnir = anterior !== undefined && anterior.estaLibre() && actual.estaLibre()
+
+            sePuedenUnir && (
+                fusionados[fusionados.length - 1] = new BloqueMemoria(
+                    anterior.getInicio(),
+                    anterior.getTamanio() + actual.getTamanio()
+                )
+            );
+
+            !sePuedenUnir && fusionados.push(actual)
+        }
+
+        this.setBloques(fusionados)
     }
 }
 

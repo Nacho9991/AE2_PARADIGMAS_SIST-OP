@@ -78,7 +78,7 @@ export class Simulador {
         const esValido = pidValido && memoriaValida && cpuValido && !yaExiste
         esValido && this.procesos.push(new Proceso(pid, memoriaRequerida, cpuTotal, evento))
     }
-    
+
     private admitirProcesos(): void {
         const gestor = this.getGestorMemoria()
         gestor && this.getProcesos()
@@ -133,11 +133,24 @@ export class Simulador {
         agotoQuantum && !hayOtroListo && actual.resetQuantum()
     }
 
+    private actualizarBloqueados(): void {
+    this.procesos
+     .filter((p) => p.getEstado() === EstadodeProceso.Bloqueado)
+     .forEach((p) => {
+     p.decrementarBloqueo()
+     p.getBloqueoRestante() === 0 && p.desbloquear()
+     p.getEstado() === EstadodeProceso.Listo && (this.procesos = [ ...this.procesos.filter((otro) => otro !== p), p,])
+     })
+    }
+
     tick(): void {
         this.admitirProcesos();
-        this.setTickActual(this.getTickActual() + 1)
-        this.despacharYEjecutar()
+        this.actualizarBloqueados();
+        this.despacharYEjecutar();
+        this.tickActual = this.tickActual + 1;
     }
+
+    
 
     
 

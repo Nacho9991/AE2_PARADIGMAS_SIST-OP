@@ -101,5 +101,47 @@ describe("Transicion bloquear() y estado Bloqueado", () => {
         expect(p.getEstado()).toBe(EstadodeProceso.Nuevo);
         expect(p.getBloqueoRestante()).toBe(0)
     })
+    
+    describe("Transicion desbloquear() y vuelta a Listo", () => {
+        test("desbloquea a Listo si esta Bloqueado y el bloqueo restante es cero", () => {
+            const evento = new EventoES(1, 0)
+            const p = new Proceso(1, 200, 5, evento)
+
+            p.admitir()
+            p.despachar()
+            p.bloquear()
+
+            expect(p.getEstado()).toBe(EstadodeProceso.Bloqueado)
+            expect(p.getBloqueoRestante()).toBe(0)
+
+            p.desbloquear()
+
+            expect(p.getEstado()).toBe(EstadodeProceso.Listo);
+        })
+
+        test("no desbloquea si esta Bloqueado pero todavía tiene bloqueo restante", () => {
+            const evento = new EventoES(1, 3);
+            const p = new Proceso(1, 200, 5, evento)
+
+            p.admitir()
+            p.despachar()
+            p.bloquear()
+
+            expect(p.getEstado()).toBe(EstadodeProceso.Bloqueado);
+            expect(p.getBloqueoRestante()).toBe(3);
+
+            p.desbloquear();
+
+            expect(p.getEstado()).toBe(EstadodeProceso.Bloqueado);
+        })
+
+        test("ignora la transicion desbloquear() si el proceso no se encuentra en estado Bloqueado", () => {
+            const p = new Proceso(1, 200, 5)
+
+            p.desbloquear()
+
+            expect(p.getEstado()).toBe(EstadodeProceso.Nuevo)
+        })
+    })
 })
 })

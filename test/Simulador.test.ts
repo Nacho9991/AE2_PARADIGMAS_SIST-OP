@@ -246,3 +246,42 @@ describe("Carga de lotes de procesos", () => {
         expect(p2Post?.getEstado()).toBe(EstadodeProceso.Ejecutando)
         expect(p2Post?.getQuantumConsumido()).toBe(1)
     })
+
+    test("E/S: decrementa bloqueoRestante en cada tick y desbloquea a Listo al llegar a 0", () => {
+        const sim = new Simulador(1000, 5)
+        const evento = new EventoES(1, 2)
+        sim.registrarProceso(1, 400, 5, evento)
+        sim.tick()
+        const p1Tick1 = sim.getProceso(1)
+        expect(p1Tick1?.getEstado()).toBe(EstadodeProceso.Bloqueado)
+        expect(p1Tick1?.getBloqueoRestante()).toBe(2)
+
+        sim.tick();
+        const p1Tick2 = sim.getProceso(1)
+        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Bloqueado)
+        expect(p1Tick2?.getBloqueoRestante()).toBe(1)
+        sim.tick();
+        const p1Tick3 = sim.getProceso(1)
+        expect(p1Tick3?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1Tick3?.getBloqueoRestante()).toBe(0)
+        expect(p1Tick3?.getCpuRestante()).toBe(3)
+    })
+
+    test("E/S y FIFO: un proceso que se desbloquea pasa al final de Listo cediendo CPU al que ya esperaba", () => {
+        const sim = new Simulador(1000, 5)
+        const evento = new EventoES(1, 1)
+        sim.registrarProceso(1, 400, 5, evento)
+        sim.registrarProceso(2, 400, 5)
+
+        sim.tick()
+        expect(sim.getProceso(1)?.getEstado()).toBe(EstadodeProceso.Bloqueado)
+        expect(sim.getProceso(2)?.getEstado()).toBe(EstadodeProceso.Listo)
+
+        sim.tick()
+        const p1Tick2 = sim.getProceso(1)
+        const p2Tick2 = sim.getProceso(2)
+
+        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Listo)
+        expect(p2Tick2?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p2Tick2?.getCpuRestante()).toBe(4)
+    })

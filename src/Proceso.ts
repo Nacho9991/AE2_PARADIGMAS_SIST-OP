@@ -101,6 +101,23 @@ export class Proceso{
     terminar(): void {
         const puedeTerminar = this.getEstado() === EstadodeProceso.Ejecutando
         puedeTerminar && this.setEstado(EstadodeProceso.Terminado)
+    }
+
+    desbloquear(): void {
+        const puedeDesbloquear =
+            this.getEstado() === EstadodeProceso.Bloqueado &&
+            this.getBloqueoRestante() === 0
+
+        puedeDesbloquear && this.setEstado(EstadodeProceso.Listo)
+    }
+
+    decrementarBloqueo(): void {
+        const puedeDecrementar =
+         this.getEstado() === EstadodeProceso.Bloqueado &&
+         this.getBloqueoRestante() > 0
+
+        puedeDecrementar && (this.bloqueoRestante = this.bloqueoRestante - 1)
+    }
 
         
-}}
+}

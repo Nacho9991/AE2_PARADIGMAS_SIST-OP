@@ -96,4 +96,57 @@ describe("GestorMemoria", () => {
 
 
     })
+
+    describe("Metricas de memoria (IConsultaMemoria)", () => {
+        test("calcula correctamente memoria libre, mayor bloque y memoria ocupada", () => {
+            const gestor = new GestorMemoria(1000)
+            
+            expect(gestor.getMemoriaLibreTotal()).toBe(1000)
+            expect(gestor.getMayorBloqueLibre()).toBe(1000)
+            expect(gestor.getMemoriaOcupada()).toBe(0)
+
+            gestor.asignar(1, 300)
+            gestor.asignar(2, 400)
+
+            expect(gestor.getMemoriaOcupada()).toBe(700)
+            expect(gestor.getMemoriaLibreTotal()).toBe(300)
+            expect(gestor.getMayorBloqueLibre()).toBe(300)
+
+            gestor.liberar(1)
+            expect(gestor.getMemoriaOcupada()).toBe(400)
+            expect(gestor.getMemoriaLibreTotal()).toBe(600)
+            expect(gestor.getMayorBloqueLibre()).toBe(300)
+        })
+    })
+
+    describe("Fragmentacion externa", () => {
+        test("es 0 cuando la memoria está completamente libre", () => {
+            const gestor = new GestorMemoria(1000);
+
+            expect(gestor.getMemoriaLibreTotal()).toBe(1000)
+            expect(gestor.getMayorBloqueLibre()).toBe(1000)
+            expect(gestor.getFragmentacionExterna()).toBe(0)
+        });
+
+        test("calcula la memoria libre no contigua cuando hay fragmentación", () => {
+            const gestor = new GestorMemoria(1000)
+            gestor.asignar(1, 200)
+            gestor.asignar(2, 100)
+            gestor.asignar(3, 400)
+
+            gestor.liberar(2)
+            expect(gestor.getMemoriaLibreTotal()).toBe(400)
+            expect(gestor.getMayorBloqueLibre()).toBe(300)
+            expect(gestor.getFragmentacionExterna()).toBe(100)
+        })
+
+        test("es 0 cuando la memoria está totalmente ocupada", () => {
+            const gestor = new GestorMemoria(500)
+            gestor.asignar(1, 500)
+
+            expect(gestor.getMemoriaLibreTotal()).toBe(0)
+            expect(gestor.getMayorBloqueLibre()).toBe(0)
+            expect(gestor.getFragmentacionExterna()).toBe(0)
+        })
+    })
 })

@@ -76,5 +76,24 @@ export class GestorMemoria implements IGestorMemoria {
 
         this.setBloques(fusionados)
     }
+
+    getMemoriaLibreTotal(): number {
+        return this.bloques
+            .filter((b) => b.estaLibre())
+            .reduce((acc, b) => acc + b.getTamanio(), 0)
+    }
+
+    getMayorBloqueLibre(): number {
+        const libres = this.bloques.filter((b) => b.estaLibre());
+        return libres.reduce((max, b) => Math.max(max, b.getTamanio()), 0)
+    }
+
+    getMemoriaOcupada(): number {
+        return this.getMemoriaTotal() - this.getMemoriaLibreTotal()
+    }
+
+    getFragmentacionExterna(): number {
+        return this.getMemoriaLibreTotal() - this.getMayorBloqueLibre()
+    }
 }
 

@@ -2,15 +2,15 @@ import {EstadodeProceso} from "./EstadodeProceso";
 import {IProcesoConsulta} from "./IProcesoConsulta"
 import{IProcesoControl} from "./IProcesoControl"
 import{EventoES} from "./EventoES"
-export class Proceso{
-    private readonly pid: number;
-    private readonly memoriaRequerida: number;
-    private readonly cpuTotal: number;
+export class Proceso implements IProcesoControl, IProcesoConsulta{
+    private readonly pid: number
+    private readonly memoriaRequerida: number
+    private readonly cpuTotal: number
     private cpuRestante: number
     private quantumConsumido: number = 0
     private bloqueoRestante: number=0
-    private estado: EstadodeProceso;
-    private readonly evento?: EventoES;
+    private estado: EstadodeProceso
+    private readonly evento?: EventoES
 
     constructor(pid:number, memoriaRequerida:number, cpuTotal: number, evento?: EventoES) {
         this.pid = pid;
@@ -39,10 +39,23 @@ export class Proceso{
     return this.cpuRestante;
     }
     getQuantumConsumido(): number {
-    return this.quantumConsumido;
+        
+    return this.quantumConsumido
     }
+    
     getEvento(): EventoES | undefined {
-        return this.evento;
+        return this.evento
+    }
+    ejecutarTick(): void {
+        this.ejecutar()
+    }
+
+    avanzarBloqueo(): void {
+        this.decrementarBloqueo()
+    }
+
+    expulsar(): void {
+        this.timeout();
     }
     private setQuantumConsumido(valor: number): void {
         this.quantumConsumido = valor

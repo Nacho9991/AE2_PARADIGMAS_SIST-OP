@@ -1,6 +1,10 @@
 export interface IProcesoControl {
-    esperarMemoria(): void;
     admitir(): void;
-    despachar():void;
-    terminar():void;
+    esperarMemoria(): void;
+    despachar(): void;
+    ejecutarTick(): void;
+    bloquear(): void;
+    avanzarBloqueo(): void;
+    expulsar(): void
+    terminar(): void;
 }

@@ -1,17 +1,22 @@
-import { BloqueMemoria } from"../src/BloqueMemoria";
-import {IGestorMemoria} from "../IGestorMemoria"
-export class GestorMemoria implements IGestorMemoria {
-    private readonly memoriaTotal: number;
-    private bloques: BloqueMemoria[];
+import { BloqueMemoria } from "./BloqueMemoria";
+import { IGestorMemoria } from "./IGestorMemoria";
+import { IConsultaMemoria } from "./IConsultaMemoria"
+import { IPoliticaAsignacion } from "./IPoliticaAsignacion"
+import { FirstFit } from "./FirstFit"
+export class GestorMemoria implements IGestorMemoria, IConsultaMemoria {
+ private readonly memoriaTotal: number
+    private bloques: BloqueMemoria[]
+    private readonly estrategia: IPoliticaAsignacion
 
-    constructor(memoriaTotal: number){
-        this.memoriaTotal = memoriaTotal;
-        this.bloques = [new BloqueMemoria(0, memoriaTotal)];
+    constructor(memoriaTotal: number, estrategia: IPoliticaAsignacion = new FirstFit()) {
+        this.memoriaTotal = memoriaTotal
+        this.bloques = [new BloqueMemoria(0, memoriaTotal)]
+        this.estrategia = estrategia
     }
     getMemoriaTotal(): number {
         return this.memoriaTotal;
     }
-    getBloques(): ReadonlyArray<BloqueMemoria> { //deja mirar los bloques de memoria y recorrerlos, pero bajo ninguna circunstancia puedes alterar, agregar o quitar elementos de esta lista
+    getBloques(): ReadonlyArray<BloqueMemoria> { 
         return this.bloques
     }
     private setBloques(nuevosBloques: BloqueMemoria[]): void{
@@ -20,14 +25,11 @@ export class GestorMemoria implements IGestorMemoria {
 
 //leer
     asignar(pid: number, tamanioRequerido: number): boolean{
-        let bloqueObjetivoIndex: number = -1; 
-
-        this.getBloques().forEach((bloque, index) => {
-            const esCandidato = bloque.estaLibre() && bloque.getTamanio() >= tamanioRequerido;
-            bloqueObjetivoIndex === -1 && esCandidato && (bloqueObjetivoIndex = index);
-        });
-
-        const hayEspacio = bloqueObjetivoIndex !== -1
+        
+        const bloqueElegido = this.estrategia.seleccionar(this.getBloques(), tamanioRequerido);
+        const bloqueObjetivoIndex = bloqueElegido ? this.bloques.indexOf(bloqueElegido) : -1;
+        const hayEspacio = bloqueObjetivoIndex !== -1;
+        
 
         hayEspacio && (() => {
         const bloque = this.getBloques()[bloqueObjetivoIndex];

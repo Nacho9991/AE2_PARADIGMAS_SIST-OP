@@ -87,17 +87,34 @@ describe("Carga de lotes de procesos", () => {
         expect(sim.getProcesos()).toHaveLength(0)
     })
 //leer
-    test("admitirProcesos: transiciona de NUEVO a LISTO si hay memoria disponible", () => {
-        const sim = new Simulador(1000, 5);
-        sim.registrarProceso(1, 400, 10);
-        sim.registrarProceso(2, 800, 10); // Supera el espacio restante (quedan 600)
+    test("admitirProcesos transiciona de Nuevo Listohay memoria disponible", () => {
+        const sim = new Simulador(1000, 5)
+        sim.registrarProceso(1, 400, 10)
+        sim.registrarProceso(2, 400, 10)
+        sim.registrarProceso(3, 800, 10)
+    
+        sim.tick()
+        const p1 = sim.getProceso(1)
+        const p2 = sim.getProceso(2)
+        const p3 = sim.getProceso(3)
+
+        expect(p1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p2?.getEstado()).toBe(EstadodeProceso.Listo)
+        expect(p3?.getEstado()).toBe(EstadodeProceso.Nuevo)
+    })
+    })
+
+    //leer devuelta
+
+    test("despacharYEjecutar transiciona de Listo a Ejecutando y consume 1 ciclo de CPU", () => {
+        const sim = new Simulador(1000, 5)
+        sim.registrarProceso(1, 400, 10)
 
         sim.tick()
 
         const p1 = sim.getProceso(1)
-        const p2 = sim.getProceso(2)
 
-        expect(p1?.getEstado()).toBe(EstadodeProceso.Listo)
-        expect(p2?.getEstado()).toBe(EstadodeProceso.Nuevo)
+        expect(p1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1?.getCpuRestante()).toBe(9)
+        expect(sim.getTickActual()).toBe(1)
     })
-})

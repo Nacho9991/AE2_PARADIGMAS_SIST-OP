@@ -86,9 +86,25 @@ export class Simulador {
             })
     }
 
+    
+    private despacharYEjecutar(): void {
+        const enEjecucion = this.getProcesos().find(
+            (p) => p.getEstado() === EstadodeProceso.Ejecutando
+        )
+        const siguienteListo = !enEjecucion
+            ? this.getProcesos().find((p) => p.getEstado() === EstadodeProceso.Listo)
+            : undefined
+        siguienteListo && siguienteListo.despachar()
+        const actual = enEjecucion || siguienteListo;
+        actual && actual.ejecutar();
+    }
+
     tick(): void {
         this.admitirProcesos();
         this.setTickActual(this.getTickActual() + 1)
+        this.despacharYEjecutar()
     }
+
+    
 
 }

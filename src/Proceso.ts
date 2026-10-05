@@ -57,6 +57,9 @@ export class Proceso{
         const puedeEsperar = this.getEstado() === EstadodeProceso.Nuevo;
         puedeEsperar && this.setEstado(EstadodeProceso.Esperando_Memoria);
     }
+    ejecutar(): void {
+        this.cpuRestante > 0 && (this.cpuRestante = this.cpuRestante - 1);
+    }
     admitir(): void {
         const puedeAdmitir = this.getEstado() === EstadodeProceso.Nuevo || 
         this.getEstado() === EstadodeProceso.Esperando_Memoria;

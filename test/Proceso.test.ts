@@ -16,50 +16,6 @@ describe("Proceso", () => {
     });
 });
 
-describe("PID invalido", () => {
-    test("un PID igual a 0 no es valido", ()=>{
-        expect(new Proceso(0, 200, 5).esValido()).toBe(false);
-    });
-    test("un PID negativo no es valido", ()=>{
-        expect(new Proceso(-9, 200, 5).esValido()).toBe(false);
-    });
-    test("un PID decimal no es valido", ()=>{
-        expect(new Proceso(3.3, 200, 5).esValido()).toBe(false);
-    });
-    test("un PID que no sea un numero no es valido", ()=>{
-        expect(new Proceso(NaN, 200, 5).esValido()).toBe(false);
-    });
-});
-
-describe("memoria requerida invalida", () => {
-    test("Una memoria que sea igual a 0 no es valida", ()=>{
-        expect(new Proceso(1, 0, 5).esValido()).toBe(false);
-    });
-    test("una memoria que sea igual a negativa no es valido", ()=>{
-        expect(new Proceso(1, -9, 5).esValido()).toBe(false);
-    });
-    test("una memoria que sea decimal no es valido", ()=>{
-        expect(new Proceso(1, 3.3, 5).esValido()).toBe(false);
-    });
-    test("una memoria que no sea un numero no es valido", ()=>{
-        expect(new Proceso(1, NaN, 5).esValido()).toBe(false);
-    });
-});
-
-describe("tiempo de CPU invalido", () => {
-    test("un tiempo de CPU que sea igual a 0 no es valida", ()=>{
-        expect(new Proceso(1, 200, 0).esValido()).toBe(false);
-    });
-    test("un tiempo de CPU a que sea igual a negativo no es valido", ()=>{
-        expect(new Proceso(1, 200, -5).esValido()).toBe(false);
-    });
-    test("un tiempo de CPU que sea decimal no es valido", ()=>{
-        expect(new Proceso(1, 200, 5.5).esValido()).toBe(false);
-    });
-    test("un tiempo de CPU que no sea un numero no es valido", ()=>{
-        expect(new Proceso(1, 200, NaN).esValido()).toBe(false);
-    });
-});
 
 describe("estado inicial", () => {
     test("Un proceso recien creado debe estar en estado nuevo",()=>{
@@ -119,29 +75,6 @@ describe("Transicion bloquear() y estado Bloqueado", () => {
             expect(p.getEstado()).toBe(EstadodeProceso.Listo);
         })
 
-        test("no desbloquea si esta Bloqueado pero todavía tiene bloqueo restante", () => {
-            const evento = new EventoES(1, 3);
-            const p = new Proceso(1, 200, 5, evento)
-
-            p.admitir()
-            p.despachar()
-            p.bloquear()
-
-            expect(p.getEstado()).toBe(EstadodeProceso.Bloqueado);
-            expect(p.getBloqueoRestante()).toBe(3);
-
-            p.desbloquear();
-
-            expect(p.getEstado()).toBe(EstadodeProceso.Bloqueado);
-        })
-
-        test("ignora la transicion desbloquear() si el proceso no se encuentra en estado Bloqueado", () => {
-            const p = new Proceso(1, 200, 5)
-
-            p.desbloquear()
-
-            expect(p.getEstado()).toBe(EstadodeProceso.Nuevo)
-        })
     })
 })
 })

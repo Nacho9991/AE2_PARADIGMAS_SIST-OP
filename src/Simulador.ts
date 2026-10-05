@@ -132,8 +132,6 @@ export class Simulador implements ISimulador, ISimuladorConsulta {
         };
     }
 
-    // --- Control de la Simulación (ISimulador) ---
-
     registrarProceso(pid: number, memoriaRequerida: number, cpuTotal: number, evento?: EventoES): void {
         const pidValido = pid > 0 && pid % 1 === 0;
         const memoriaValida =
@@ -183,8 +181,6 @@ export class Simulador implements ISimulador, ISimuladorConsulta {
         terminado && this.gestorMemoria?.liberar(terminado.getPid());
     }
 
-    // --- RF10: Consulta del Estado Completo del Sistema ---
-
     getEstadoSistema(): IEstadoSistema {
         return {
             tick: this.getTickActual(),
@@ -194,6 +190,11 @@ export class Simulador implements ISimulador, ISimuladorConsulta {
             bloqueados: [...this.getBloqueados()],
             terminados: [...this.getTerminados()],
             mapaMemoria: [...this.getMapaMemoria()],
-        };
+        }
+    }
+
+    getCantidadProcesosPorEstado(estado: EstadodeProceso): number {
+        const filtrados = this.procesos.filter((p) => p.getEstado() === estado);
+        return filtrados.length;
     }
 }

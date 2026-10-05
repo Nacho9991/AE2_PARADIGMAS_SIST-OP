@@ -97,5 +97,11 @@ export class GestorMemoria implements IGestorMemoria, IConsultaMemoria {
     getFragmentacionExterna(): number {
         return this.getMemoriaLibreTotal() - this.getMayorBloqueLibre()
     }
+
+    getPorcentajeOcupacion(): number {
+        return this.memoriaTotal === 0
+            ? 0
+            : Math.round((this.getMemoriaOcupada() / this.memoriaTotal) * 100);
+    }
 }
 

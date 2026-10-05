@@ -59,7 +59,6 @@ export class PlanificadorRoundRobin implements IPlanificador, IPlanificadorConsu
             this.ticksCpuOcupada += 1
         })()
 
-        // 3. Evaluar fin de proceso
         const termino = actual !== undefined && actual.getCpuRestante() === 0
         termino && (() => {
             actual.terminar()
@@ -117,5 +116,11 @@ export class PlanificadorRoundRobin implements IPlanificador, IPlanificadorConsu
 
     getTicksCpuOcupada(): number {
         return this.ticksCpuOcupada
+    }
+
+    getRatioCambiosPorTick(): number {
+        const ocupada = this.ticksCpuOcupada;
+        const cambios = this.cambiosContexto;
+        return ocupada === 0 ? 0 : Number((cambios / ocupada).toFixed(2));
     }
 }

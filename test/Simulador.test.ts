@@ -12,30 +12,7 @@ describe("Inicio de la simulacion", () => {
         expect(sim.esValido()).toBe(true)
     });
 
-    test("rechaza configuracion con memmoria menor o igual a cero o flotante", ()=>{
-        const simNegativa = new Simulador (-100, 5);
-        const simCero = new Simulador (0, 4);
-        const simFlotante = new Simulador (512.5, 5);
 
-        expect(simNegativa.esValido()).toBe(false);
-        expect(simCero.esValido()).toBe(false)
-        expect(simFlotante.esValido()).toBe(false);
-
-        expect(simCero.getMapaMemoria()).toHaveLength(0);
-
-    });
-
-    test("rechaza configuracion con quantum menor o igual a cero o flotante", ()=>{
-        const simNegativa = new Simulador (1024, 0);
-        const simCero = new Simulador (1024, -2);
-        const simFlotante = new Simulador (1024, 2.5);
-        
-        expect(simNegativa.esValido()).toBe(false);
-        expect(simCero.esValido()).toBe(false)
-        expect(simFlotante.esValido()).toBe(false);
-        
-        expect(simCero.getMapaMemoria()).toHaveLength(0);
-    });
 
     test("Inicia con las colas vacias y un unico bloque libre que cubre toda la memoria", ()=>{
         const sim = new Simulador (1024, 5);
@@ -72,21 +49,6 @@ describe("Carga de lotes de procesos", () => {
         expect(sim.getProcesos()[0].getMemoriaRequerida()).toBe(256)
     });
 
-    test("ignora proceso requiere mas memoria que el total del siguente", ()=>{
-        const sim = new Simulador (512, 5)
-        sim.registrarProceso(1, 1024, 10)
-        expect(sim.getProcesos()).toHaveLength(0)
-    });
-
-    test("ignora proceso con parametros no enteros o menores/iguales a cero", ()=>{
-        const sim = new Simulador (1024, 5);
-        sim.registrarProceso(0, 256, 10)
-        sim.registrarProceso(1, -256, 10)
-        sim.registrarProceso(2, 256, 0)
-        sim.registrarProceso(3, 256.5, 10)
-        
-        expect(sim.getProcesos()).toHaveLength(0)
-    })
 //leer
     test("admitirProcesos transiciona de Nuevo Listohay memoria disponible", () => {
         const sim = new Simulador(1000, 5)

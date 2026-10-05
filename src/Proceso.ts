@@ -133,5 +133,10 @@ export class Proceso implements IProcesoControl, IProcesoConsulta{
         puedeDecrementar && (this.bloqueoRestante = this.bloqueoRestante - 1)
     }
 
+    getPorcentajeAvance(): number {
+        const ejecutado = this.cpuTotal - this.cpuRestante;
+        return this.cpuTotal === 0 ? 0 : Math.round((ejecutado / this.cpuTotal) * 100);
+    }
+
         
 }

@@ -166,26 +166,25 @@ describe("Carga de lotes de procesos", () => {
     })
 
     test("E/S: un proceso transiciona a Bloqueado al alcanzar ticksCpuParaDisparo y libera la CPU", () => {
-        const sim = new Simulador(1000, 5); // Quantum amplio (5)
-        const evento = new EventoES(2, 3);   // Dispara tras 2 ticks de CPU, dura 3 ticks
-        sim.registrarProceso(1, 400, 5, evento);
+        const sim = new Simulador(1000, 5)
+        const evento = new EventoES(2, 3)
+        sim.registrarProceso(1, 400, 5, evento)
 
-        // Tick 1: P1 ejecuta 1 ciclo
+     
         sim.tick();
         const p1Tick1 = sim.getProceso(1);
-        expect(p1Tick1?.getEstado()).toBe(EstadodeProceso.Ejecutando);
+        expect(p1Tick1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
 
-        // Tick 2: P1 ejecuta su 2do ciclo -> alcanza ticksCpuParaDisparo (2) -> pasa a Bloqueado
-        sim.tick();
-        const p1Tick2 = sim.getProceso(1);
-        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Bloqueado);
-        expect(p1Tick2?.getBloqueoRestante()).toBe(3);
+       
+        sim.tick()
+        const p1Tick2 = sim.getProceso(1)
+        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Bloqueado)
+        expect(p1Tick2?.getBloqueoRestante()).toBe(3)
 
-        // Tick 3: La CPU queda libre (ningún proceso ejecutando)
-        sim.tick();
+        sim.tick()
         const procesoEnCpu = sim.getProcesos().find(
             (p) => p.getEstado() === EstadodeProceso.Ejecutando
-        );
+        )
         expect(procesoEnCpu).toBeUndefined();
     });
 
@@ -255,44 +254,40 @@ describe("Carga de lotes de procesos", () => {
         });
 
         test("es 0% si la CPU permanece completamente ociosa", () => {
-            const sim = new Simulador(1000, 5);
-
-            // Corremos 5 ticks sin ningún proceso cargado
+            const sim = new Simulador(1000, 5)
             for (let i = 0; i < 5; i++) {
-                sim.tick();
+                sim.tick()
             }
 
-            expect(sim.getTickActual()).toBe(5);
-            expect(sim.getTicksCpuOcupada()).toBe(0);
-            expect(sim.getUtilizacionCpu()).toBe(0);
+            expect(sim.getTickActual()).toBe(5)
+            expect(sim.getTicksCpuOcupada()).toBe(0)
+            expect(sim.getUtilizacionCpu()).toBe(0)
         });
 
         test("es 100% cuando la CPU está siempre ocupada", () => {
             const sim = new Simulador(1000, 5);
-            sim.registrarProceso(1, 400, 10); // Necesita 10 ticks de CPU
+            sim.registrarProceso(1, 400, 10)
 
             for (let i = 0; i < 10; i++) {
                 sim.tick();
             }
 
-            expect(sim.getTickActual()).toBe(10);
-            expect(sim.getTicksCpuOcupada()).toBe(10);
-            expect(sim.getUtilizacionCpu()).toBe(100);
-        });
+            expect(sim.getTickActual()).toBe(10)
+            expect(sim.getTicksCpuOcupada()).toBe(10)
+            expect(sim.getUtilizacionCpu()).toBe(100)
+        })
 
         test("es 50% cuando la CPU trabaja la mitad de los ticks", () => {
             const sim = new Simulador(1000, 5);
-            sim.registrarProceso(1, 400, 5); // Ejecuta exactamente 5 ticks
-
-            // Ejecutamos 10 ticks en total (5 con CPU ocupada, 5 ociosa)
+            sim.registrarProceso(1, 400, 5)
             for (let i = 0; i < 10; i++) {
                 sim.tick();
             }
 
-            expect(sim.getTickActual()).toBe(10);
-            expect(sim.getTicksCpuOcupada()).toBe(5);
-            expect(sim.getUtilizacionCpu()).toBe(50);
-        });
+            expect(sim.getTickActual()).toBe(10)
+            expect(sim.getTicksCpuOcupada()).toBe(5)
+            expect(sim.getUtilizacionCpu()).toBe(50)
+        })
 
         test("los ticks de un proceso en Bloqueado por E/S no cuentan como CPU ocupada", () => {
             const sim = new Simulador(1000, 5)

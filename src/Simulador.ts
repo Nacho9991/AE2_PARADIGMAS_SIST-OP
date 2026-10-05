@@ -28,8 +28,6 @@ export class Simulador implements ISimulador, ISimuladorConsulta {
         configuracionValida && (this.planificador = new PlanificadorRoundRobin(quantum));
     }
 
-    // --- Consultas Base (ISimuladorConsulta) ---
-
     getMemoriaTotal(): number {
         return this.memoriaTotal;
     }
@@ -99,7 +97,6 @@ export class Simulador implements ISimulador, ISimuladorConsulta {
         return memoriaValida && quantumValido;
     }
 
-    // --- Métricas delegadas al Planificador y Gestor ---
 
     getCambiosContexto(): number {
         return this.planificador ? this.planificador.getCambiosContexto() : 0;
@@ -156,18 +153,10 @@ export class Simulador implements ISimulador, ISimuladorConsulta {
         const gestor = this.gestorMemoria;
         gestor &&
             this.getProcesos()
-                .filter(
-                    (p) =>
-                        p.getEstado() === EstadodeProceso.Nuevo ||
-                        p.getEstado() === EstadodeProceso.Esperando_Memoria
-                )
+                .filter((p) => p.getEstado() === EstadodeProceso.Nuevo || p.getEstado() === EstadodeProceso.Esperando_Memoria )
                 .forEach((p) => {
                     const asignado = gestor.asignar(p.getPid(), p.getMemoriaRequerida());
-                    asignado &&
-                        (() => {
-                            p.admitir();
-                            this.planificador?.encolar(p);
-                        })();
+                    asignado && (() => {p.admitir();this.planificador?.encolar(p);})();
                     !asignado && p.esperarMemoria();
                 });
     }

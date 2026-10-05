@@ -101,7 +101,7 @@ describe("Carga de lotes de procesos", () => {
 
         expect(p1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
         expect(p2?.getEstado()).toBe(EstadodeProceso.Listo)
-        expect(p3?.getEstado()).toBe(EstadodeProceso.Nuevo)
+        expect(p3?.getEstado()).toBe(EstadodeProceso.Esperando_Memoria)
     })
     })
 
@@ -381,3 +381,56 @@ describe("Carga de lotes de procesos", () => {
         })
    })
 
+   describe("Consulta del estado completo del sistema", () => {
+        test("devuelve el registro del estado inicial con CPU libre colas vacias y mapa intacto", () => {
+            const sim = new Simulador(1000, 2)
+            const estado = sim.getEstadoSistema()
+            expect(estado.tick).toBe(0)
+            expect(estado.cpu).toBeUndefined()
+            expect(estado.listos).toEqual([])
+            expect(estado.esperandoMemoria).toEqual([])
+            expect(estado.bloqueados).toEqual([])
+            expect(estado.terminados).toEqual([])
+            expect(estado.mapaMemoria).toHaveLength(1)
+            expect(estado.mapaMemoria[0].estaLibre()).toBe(true)
+            expect(estado.mapaMemoria[0].getTamanio()).toBe(1000)
+        })
+
+        test("refleja con precision procesos distribuidos en todos los estados posibles", () => {
+            const sim = new Simulador(1000, 2)
+            sim.registrarProceso(1, 300, 1)
+            const evento = new EventoES(1, 3)
+            sim.registrarProceso(2, 300, 3, evento)
+            sim.registrarProceso(3, 300, 4)
+            sim.registrarProceso(4, 500, 2)
+            sim.tick();
+            sim.tick()
+            sim.tick()
+
+            const estado = sim.getEstadoSistema()
+            expect(estado.tick).toBe(3)
+            expect(estado.cpu).toBe(3)                    
+            expect(estado.bloqueados).toEqual([2])          
+            expect(estado.esperandoMemoria).toEqual([4])    
+            expect(estado.terminados).toEqual([1])      
+        })
+
+        test("garantiza inmutabilidad: el registro del estado previo no se modifica con ticks posteriores", () => {
+            const sim = new Simulador(1000, 2)
+            sim.registrarProceso(1, 400, 2)
+            sim.tick()
+
+            const estadoAnterior = sim.getEstadoSistema();
+            expect(estadoAnterior.tick).toBe(1)
+            expect(estadoAnterior.cpu).toBe(1)
+            expect(estadoAnterior.terminados).toEqual([])
+            sim.tick()
+            expect(estadoAnterior.tick).toBe(1)
+            expect(estadoAnterior.cpu).toBe(1)
+            expect(estadoAnterior.terminados).toEqual([])
+
+            const estadoNuevo = sim.getEstadoSistema()
+            expect(estadoNuevo.tick).toBe(2)
+            expect(estadoNuevo.terminados).toEqual([1])
+        })
+    })

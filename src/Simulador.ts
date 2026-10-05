@@ -4,6 +4,7 @@ import { EstadodeProceso } from "./EstadodeProceso"
 import {Proceso} from "./Proceso";
 import { EventoES } from "./EventoES";
 import { Metricas } from "./Metricas"
+import {IEstadoSistema} from "./IEstadoSistema"
 
 
 export class Simulador {
@@ -107,13 +108,13 @@ export class Simulador {
         esValido && this.procesos.push(new Proceso(pid, memoriaRequerida, cpuTotal, evento))
     }
 
-    private admitirProcesos(): void {
-        const gestor = this.getGestorMemoria()
-        gestor && this.getProcesos()
-            .filter((p) => p.getEstado() === EstadodeProceso.Nuevo)
-            .forEach((p) => {
-                const asignado = gestor.asignar(p.getPid(), p.getMemoriaRequerida());
-                asignado && p.admitir()
+   private admitirProcesos(): void {
+     const gestor = this.getGestorMemoria()
+     gestor && this.getProcesos().filter((p) => p.getEstado() === EstadodeProceso.Nuevo ||  p.getEstado() === EstadodeProceso.Esperando_Memoria)
+     .forEach((p) => {
+         const asignado = gestor.asignar(p.getPid(), p.getMemoriaRequerida())
+            asignado && p.admitir()
+            !asignado && p.esperarMemoria()
             })
     }
 
@@ -204,6 +205,27 @@ export class Simulador {
         }
     }
 
-    
+   getEstadoSistema(): IEstadoSistema {
+        const enEjecucion = this.getProcesos().find(
+            (p) => p.getEstado() === EstadodeProceso.Ejecutando
+        )
 
-}
+        return {
+            tick: this.getTickActual(),
+            cpu: enEjecucion ? enEjecucion.getPid() : undefined,
+            listos: this.getProcesos()
+                .filter((p) => p.getEstado() === EstadodeProceso.Listo)
+                .map((p) => p.getPid()),
+            esperandoMemoria: this.getProcesos()
+                .filter((p) => p.getEstado() === EstadodeProceso.Esperando_Memoria) 
+                .map((p) => p.getPid()),
+            bloqueados: this.getProcesos()
+                .filter((p) => p.getEstado() === EstadodeProceso.Bloqueado)
+                .map((p) => p.getPid()),
+            terminados: this.getProcesos()
+                .filter((p) => p.getEstado() === EstadodeProceso.Terminado)
+                .map((p) => p.getPid()),
+            mapaMemoria: [...this.getMapaMemoria()],
+        }
+    }
+    }

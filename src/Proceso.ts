@@ -9,7 +9,8 @@ export class Proceso{
     private cpuRestante: number
     private quantumConsumido: number = 0
     private bloqueoRestante: number=0
-    private estado?: EventoES
+    private estado: EstadodeProceso;
+    private readonly evento?: EventoES;
 
     constructor(pid:number, memoriaRequerida:number, cpuTotal: number, evento?: EventoES) {
         this.pid = pid;

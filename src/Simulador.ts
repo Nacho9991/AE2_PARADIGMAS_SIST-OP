@@ -3,6 +3,7 @@ import {GestorMemoria} from "./GestorMemoria"
 import { EstadodeProceso } from "./EstadodeProceso"
 import {Proceso} from "./Proceso";
 import { EventoES } from "./EventoES";
+import { Metricas } from "./Metricas"
 
 
 export class Simulador {
@@ -14,6 +15,7 @@ export class Simulador {
     private ticksCpuOcupada: number;
     private cambiosContexto: number
     private ultimoPidEnCpu?: number
+    private metricas: Metricas
 
 
     constructor(memoriaTotal: number, quantum: number){
@@ -27,6 +29,7 @@ export class Simulador {
 
         const configuracionValida = this.esValido();
         configuracionValida && (this.gestorMemoria = new GestorMemoria(memoriaTotal))
+        this.metricas = this.calcularMetricas()
     }
     getMemoriaTotal(): number {
         return this.memoriaTotal;
@@ -64,6 +67,10 @@ export class Simulador {
         const gestor = this.getGestorMemoria();
         return gestor ? gestor.getBloques() : []
     } 
+
+    getMetricas(): Metricas {
+        return this.metricas
+    }
 
     private setTickActual(nuevoTick: number): void{
         this.tickActual = nuevoTick;
@@ -181,9 +188,21 @@ export class Simulador {
         this.actualizarBloqueados();
         this.despacharYEjecutar();
         this.tickActual = this.tickActual + 1;
+        this.metricas = this.calcularMetricas()
     }
 
-    
+
+    private calcularMetricas(): Metricas {
+     const gestor = this.getGestorMemoria();
+      return {
+            memoriaLibreTotal: gestor ? gestor.getMemoriaLibreTotal() : 0,
+            mayorBloqueLibre: gestor ? gestor.getMayorBloqueLibre() : 0,
+            ocupacionMemoria: gestor ? gestor.getMemoriaOcupada() : 0,
+            fragmentacionExterna: gestor ? gestor.getFragmentacionExterna() : 0,
+            utilizacionCpu: this.getUtilizacionCpu(),
+            cambiosContexto: this.getCambiosContexto()
+        }
+    }
 
     
 

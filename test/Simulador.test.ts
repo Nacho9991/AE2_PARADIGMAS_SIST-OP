@@ -347,3 +347,37 @@ describe("Carga de lotes de procesos", () => {
             expect(sim.getUtilizacionCpu()).toBe(25)
         })
     })
+
+   describe("Integracion de metricas", () => {
+     test("Inicia con metricas en estado base antes del primer tick", () => {
+            const sim = new Simulador(1000, 2)
+            const m = sim.getMetricas()
+            expect(m).toEqual({
+                memoriaLibreTotal: 1000,
+                mayorBloqueLibre: 1000,
+                ocupacionMemoria: 0,
+                fragmentacionExterna: 0,
+                utilizacionCpu: 0,
+                cambiosContexto: 0,
+            })
+
+        })
+
+        test("calcula el registro del estado completo de metricas tras un escenario mixto", () => {
+            const sim = new Simulador(1000, 2)
+            sim.registrarProceso(1, 300, 2)
+            sim.registrarProceso(2, 400, 3)
+            sim.tick()
+            sim.tick()
+            sim.tick()
+
+            const m = sim.getMetricas()
+            expect(m.ocupacionMemoria).toBe(400)
+            expect(m.memoriaLibreTotal).toBe(600)
+            expect(m.mayorBloqueLibre).toBe(300)
+            expect(m.fragmentacionExterna).toBe(300)
+            expect(m.utilizacionCpu).toBe(100)
+            expect(m.cambiosContexto).toBe(1)
+        })
+   })
+

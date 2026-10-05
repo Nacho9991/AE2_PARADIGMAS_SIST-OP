@@ -102,6 +102,19 @@ export class Simulador {
         const gestor = this.getGestorMemoria()
         termino && actual.terminar()
         termino && gestor && gestor.liberar(actual.getPid())
+        const agotoQuantum = !termino && actual && actual.getQuantumConsumido() >= this.getQuantum();
+        
+        const hayOtroListo = this.getProcesos().some(
+            (p) => p.getEstado() === EstadodeProceso.Listo && p.getPid() !== actual?.getPid()
+        )
+        agotoQuantum && hayOtroListo && actual.timeout()
+        agotoQuantum &&
+            hayOtroListo &&
+            (this.procesos = [...this.procesos.filter((p) => p !== actual), actual])
+        agotoQuantum && !hayOtroListo && actual.resetQuantum()
+    
+
+        
     }
 
     tick(): void {

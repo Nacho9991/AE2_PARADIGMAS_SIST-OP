@@ -119,7 +119,7 @@ describe("Carga de lotes de procesos", () => {
         expect(sim.getTickActual()).toBe(1)
     })
 
-test("despacharYEjecutar: transiciona a Terminado y libera memoria cuando cpuRestante llega a 0", () => {
+     test("despacharYEjecutar: transiciona a Terminado y libera memoria cuando cpuRestante llega a 0", () => {
         const sim = new Simulador(1000, 5)
         sim.registrarProceso(1, 400, 1)
 
@@ -131,4 +131,73 @@ test("despacharYEjecutar: transiciona a Terminado y libera memoria cuando cpuRes
         expect(bloques).toHaveLength(1)
         expect(bloques[0].estaLibre()).toBe(true)
         expect(bloques[0].getTamanio()).toBe(1000)
+    })
+
+    test("Round Robin desaloja a Listo y resetea quantum si agota el quantum y hay otro proceso listo", () => {
+        const sim = new Simulador(1000, 2)
+        sim.registrarProceso(1, 400, 5)
+        sim.registrarProceso(2, 400, 5)
+    
+        sim.tick()
+        const p1 = sim.getProceso(1)
+        expect(p1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1?.getQuantumConsumido()).toBe(1)
+        sim.tick();
+        const p1Post = sim.getProceso(1)
+        const p2Post = sim.getProceso(2)
+        expect(p1Post?.getEstado()).toBe(EstadodeProceso.Listo)
+        expect(p1Post?.getQuantumConsumido()).toBe(0)
+        expect(p2Post?.getEstado()).toBe(EstadodeProceso.Listo)
+    })
+    test("Round Robin: renueva quantum y continua ejecutando si vence el quantum pero no hay otro proceso listo", () => {
+        const sim = new Simulador(1000, 2)
+        sim.registrarProceso(1, 400, 5)
+        sim.tick()
+        const p1Tick1 = sim.getProceso(1)
+        expect(p1Tick1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1Tick1?.getQuantumConsumido()).toBe(1)
+
+        sim.tick();
+        const p1Tick2 = sim.getProceso(1)
+        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1Tick2?.getQuantumConsumido()).toBe(0)
+        expect(p1Tick2?.getCpuRestante()).toBe(3)
+
+        sim.tick()
+        const p1Tick3 = sim.getProceso(1)
+        expect(p1Tick3?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1Tick3?.getQuantumConsumido()).toBe(1)
+        expect(p1Tick3?.getCpuRestante()).toBe(2)
+    })
+
+    test("Round Robin: alterna entre procesos listos respetando FIFO al vencer el quantum", () => {
+        const sim = new Simulador(1000, 2)
+        sim.registrarProceso(1, 400, 5)
+        sim.registrarProceso(2, 400, 5)
+
+       
+        sim.tick();
+        const p1Tick1 = sim.getProceso(1)
+        const p2Tick1 = sim.getProceso(2)
+        expect(p1Tick1?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p1Tick1?.getQuantumConsumido()).toBe(1)
+        expect(p2Tick1?.getEstado()).toBe(EstadodeProceso.Listo)
+
+        sim.tick();
+        const p1Tick2 = sim.getProceso(1)
+        const p2Tick2 = sim.getProceso(2)
+        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Listo)
+        expect(p1Tick2?.getQuantumConsumido()).toBe(0)
+        expect(p2Tick2?.getEstado()).toBe(EstadodeProceso.Listo)
+
+        const colaListos = sim.getProcesos().filter((p) => p.getEstado() === EstadodeProceso.Listo)
+        expect(colaListos[0].getPid()).toBe(2)
+        expect(colaListos[1].getPid()).toBe(1)
+
+        sim.tick()
+        const p1Tick3 = sim.getProceso(1)
+        const p2Tick3 = sim.getProceso(2)
+        expect(p1Tick3?.getEstado()).toBe(EstadodeProceso.Listo)
+        expect(p2Tick3?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p2Tick3?.getQuantumConsumido()).toBe(1)
     })

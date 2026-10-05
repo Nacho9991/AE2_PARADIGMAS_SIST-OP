@@ -6,7 +6,7 @@ export class Proceso{
     private readonly memoriaRequerida: number;
     private readonly cpuTotal: number;
     private cpuRestante: number
-    private quantumConsumido: number
+    private quantumConsumido: number = 0
     private bloqueoRestante: number
     private estado: EstadodeProceso
 
@@ -38,6 +38,21 @@ export class Proceso{
     getQuantumConsumido(): number {
     return this.quantumConsumido;
     }
+    private setQuantumConsumido(valor: number): void {
+        this.quantumConsumido = valor
+    }
+
+    resetQuantum(): void {
+        this.quantumConsumido= 0 
+    }
+
+  timeout(): void {
+    const puedeDesalojar = this.getEstado() === EstadodeProceso.Ejecutando
+    puedeDesalojar && this.setEstado(EstadodeProceso.Listo)
+    puedeDesalojar && this.resetQuantum()
+
+    }
+
     getBloqueoRestante(): number {
     return this.bloqueoRestante;
     }
@@ -53,12 +68,14 @@ export class Proceso{
         return pidValido && memoriaValida && cpuValido;
     }
     
-    esperarMemoria(): void {
-        const puedeEsperar = this.getEstado() === EstadodeProceso.Nuevo;
-        puedeEsperar && this.setEstado(EstadodeProceso.Esperando_Memoria);
+   esperarMemoria(): void {
+        const puedeEsperar = this.getEstado() === EstadodeProceso.Nuevo
+        puedeEsperar && this.setEstado(EstadodeProceso.Esperando_Memoria)
     }
     ejecutar(): void {
-        this.cpuRestante > 0 && (this.cpuRestante = this.cpuRestante - 1);
+        const puedeEjecutar = this.cpuRestante > 0
+        puedeEjecutar && (this.cpuRestante = this.cpuRestante - 1)
+        puedeEjecutar && (this.quantumConsumido = this.quantumConsumido + 1)
     }
     admitir(): void {
         const puedeAdmitir = this.getEstado() === EstadodeProceso.Nuevo || 
@@ -67,11 +84,11 @@ export class Proceso{
     }
     despachar(): void {
         const puedeDespachar = this.getEstado() === EstadodeProceso.Listo;
-        puedeDespachar && this.setEstado(EstadodeProceso.Ejecutando);
+        puedeDespachar && this.setEstado(EstadodeProceso.Ejecutando)
     }
     terminar(): void {
-        const puedeTerminar = this.getEstado() === EstadodeProceso.Ejecutando;
-        puedeTerminar && this.setEstado(EstadodeProceso.Terminado);
-}
+        const puedeTerminar = this.getEstado() === EstadodeProceso.Ejecutando
+        puedeTerminar && this.setEstado(EstadodeProceso.Terminado)
 
-}
+        
+}}

@@ -285,3 +285,65 @@ describe("Carga de lotes de procesos", () => {
         expect(p2Tick2?.getEstado()).toBe(EstadodeProceso.Ejecutando)
         expect(p2Tick2?.getCpuRestante()).toBe(4)
     })
+
+    describe("Utilización de CPU (RF09.5)", () => {
+        test("es 0% cuando la simulación inicia en tick 0", () => {
+            const sim = new Simulador(1000, 5);
+            expect(sim.getUtilizacionCpu()).toBe(0);
+        });
+
+        test("es 0% si la CPU permanece completamente ociosa", () => {
+            const sim = new Simulador(1000, 5);
+
+            // Corremos 5 ticks sin ningún proceso cargado
+            for (let i = 0; i < 5; i++) {
+                sim.tick();
+            }
+
+            expect(sim.getTickActual()).toBe(5);
+            expect(sim.getTicksCpuOcupada()).toBe(0);
+            expect(sim.getUtilizacionCpu()).toBe(0);
+        });
+
+        test("es 100% cuando la CPU está siempre ocupada", () => {
+            const sim = new Simulador(1000, 5);
+            sim.registrarProceso(1, 400, 10); // Necesita 10 ticks de CPU
+
+            for (let i = 0; i < 10; i++) {
+                sim.tick();
+            }
+
+            expect(sim.getTickActual()).toBe(10);
+            expect(sim.getTicksCpuOcupada()).toBe(10);
+            expect(sim.getUtilizacionCpu()).toBe(100);
+        });
+
+        test("es 50% cuando la CPU trabaja la mitad de los ticks", () => {
+            const sim = new Simulador(1000, 5);
+            sim.registrarProceso(1, 400, 5); // Ejecuta exactamente 5 ticks
+
+            // Ejecutamos 10 ticks en total (5 con CPU ocupada, 5 ociosa)
+            for (let i = 0; i < 10; i++) {
+                sim.tick();
+            }
+
+            expect(sim.getTickActual()).toBe(10);
+            expect(sim.getTicksCpuOcupada()).toBe(5);
+            expect(sim.getUtilizacionCpu()).toBe(50);
+        });
+
+        test("los ticks de un proceso en Bloqueado por E/S no cuentan como CPU ocupada", () => {
+            const sim = new Simulador(1000, 5)
+            const evento = new EventoES(1, 4)
+            sim.registrarProceso(1, 400, 2, evento)
+
+            sim.tick()
+            sim.tick()
+            sim.tick()
+            sim.tick()
+            
+            expect(sim.getTickActual()).toBe(4)
+            expect(sim.getTicksCpuOcupada()).toBe(1)
+            expect(sim.getUtilizacionCpu()).toBe(25)
+        })
+    })

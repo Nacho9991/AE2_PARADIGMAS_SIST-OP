@@ -11,11 +11,18 @@ export class Simulador {
     private tickActual: number;
     private gestorMemoria?: GestorMemoria;
     private procesos: Proceso[];
+    private ticksCpuOcupada: number;
+    private cambiosContexto: number
+    private ultimoPidEnCpu?: number
+
 
     constructor(memoriaTotal: number, quantum: number){
         this.memoriaTotal = memoriaTotal;
         this.quantum = quantum;
         this.tickActual = 0;
+        this.ticksCpuOcupada = 0
+        this.cambiosContexto = 0
+        this.ultimoPidEnCpu = undefined
         this.procesos = [];
 
         const configuracionValida = this.esValido();
@@ -26,6 +33,20 @@ export class Simulador {
     }
     getQuantum(): number {
         return this.quantum
+    }
+
+    getCambiosContexto(): number {
+        return this.cambiosContexto
+    }
+
+    getTicksCpuOcupada(): number {
+        return this.ticksCpuOcupada
+    }
+
+    getUtilizacionCpu(): number {
+        return this.tickActual === 0
+            ? 0
+            : (this.ticksCpuOcupada / this.tickActual) * 100
     }
     getTick(): number {
         return this.tickActual;
@@ -93,14 +114,26 @@ export class Simulador {
     private despacharYEjecutar(): void {
         const enEjecucion = this.getProcesos().find(
             (p) => p.getEstado() === EstadodeProceso.Ejecutando
-        )
+        );
         const siguienteListo = !enEjecucion
             ? this.getProcesos().find((p) => p.getEstado() === EstadodeProceso.Listo)
             : undefined
 
         siguienteListo && siguienteListo.despachar()
         const actual = enEjecucion || siguienteListo
-        actual && actual.ejecutar()
+
+        const esCambioContexto =
+            actual !== undefined &&
+            this.ultimoPidEnCpu !== undefined &&
+            this.ultimoPidEnCpu !== actual.getPid()
+
+        esCambioContexto && (this.cambiosContexto = this.cambiosContexto + 1)
+
+        this.ultimoPidEnCpu = actual ? actual.getPid() : undefined
+
+        actual && actual.ejecutar();
+        actual && (this.ticksCpuOcupada = this.ticksCpuOcupada + 1)
+
         const termino = actual && actual.getCpuRestante() === 0
         const gestor = this.getGestorMemoria()
 
@@ -127,7 +160,7 @@ export class Simulador {
 
         agotoQuantum && hayOtroListo && actual.timeout()
         agotoQuantum &&
-            hayOtroListo &&
+        hayOtroListo &&
             (this.procesos = [...this.procesos.filter((p) => p !== actual), actual])
 
         agotoQuantum && !hayOtroListo && actual.resetQuantum()

@@ -2,6 +2,7 @@ import {BloqueMemoria} from "./BloqueMemoria"
 import {GestorMemoria} from "./GestorMemoria"
 import { EstadodeProceso } from "./EstadodeProceso"
 import {Proceso} from "./Proceso";
+import { EventoES } from "./EventoES";
 
 
 export class Simulador {
@@ -65,17 +66,19 @@ export class Simulador {
         return encontrado
     }
 
-    registrarProceso(pid: number, memoria: number, cpu: number): void {
-        const pidValido = pid > 0 && pid % 1 === 0;
-        const memoriaValida = memoria > 0 && memoria % 1 === 0 && memoria <= this.getMemoriaTotal();
-        const cpuValido = cpu > 0 && cpu % 1 === 0;
+    registrarProceso( pid: number, memoriaRequerida: number,cpuTotal: number,evento?: EventoES): void {
+        const pidValido = pid > 0 && pid % 1 === 0
+        const memoriaValida =
+            memoriaRequerida > 0 &&
+            memoriaRequerida % 1 === 0 &&
+            memoriaRequerida <= this.getMemoriaTotal()
+        const cpuValido = cpuTotal > 0 && cpuTotal % 1 === 0
+        const yaExiste = this.getProceso(pid) !== undefined
 
-        const yaExiste = this.getProceso(pid) !== undefined;
-        const esAdmisible = pidValido && memoriaValida && cpuValido && !yaExiste;
-
-        esAdmisible && this.setProcesos([...this.getProcesos(), new Proceso(pid, memoria, cpu)]);
+        const esValido = pidValido && memoriaValida && cpuValido && !yaExiste
+        esValido && this.procesos.push(new Proceso(pid, memoriaRequerida, cpuTotal, evento))
     }
-
+    
     private admitirProcesos(): void {
         const gestor = this.getGestorMemoria()
         gestor && this.getProcesos()
@@ -94,27 +97,40 @@ export class Simulador {
         const siguienteListo = !enEjecucion
             ? this.getProcesos().find((p) => p.getEstado() === EstadodeProceso.Listo)
             : undefined
+
         siguienteListo && siguienteListo.despachar()
         const actual = enEjecucion || siguienteListo
         actual && actual.ejecutar()
-
         const termino = actual && actual.getCpuRestante() === 0
         const gestor = this.getGestorMemoria()
+
         termino && actual.terminar()
         termino && gestor && gestor.liberar(actual.getPid())
-        const agotoQuantum = !termino && actual && actual.getQuantumConsumido() >= this.getQuantum();
-        
+
+        const cpuEjecutado = actual ? actual.getCpuTotal() - actual.getCpuRestante() : 0
+        const disparaES =
+            !termino &&
+            actual?.getEvento() !== undefined &&
+            cpuEjecutado === actual.getEvento()?.getTicksCpuParaDisparo()
+
+        disparaES && actual.bloquear()
+
+        const agotoQuantum =
+            !termino &&
+            !disparaES &&
+            actual &&
+            actual.getQuantumConsumido() >= this.getQuantum()
+
         const hayOtroListo = this.getProcesos().some(
             (p) => p.getEstado() === EstadodeProceso.Listo && p.getPid() !== actual?.getPid()
         )
+
         agotoQuantum && hayOtroListo && actual.timeout()
         agotoQuantum &&
             hayOtroListo &&
             (this.procesos = [...this.procesos.filter((p) => p !== actual), actual])
-        agotoQuantum && !hayOtroListo && actual.resetQuantum()
-    
 
-        
+        agotoQuantum && !hayOtroListo && actual.resetQuantum()
     }
 
     tick(): void {

@@ -1,6 +1,7 @@
 import {describe, test, expect} from "vitest"
 import {Simulador} from "../src/Simulador"
 import {EstadodeProceso} from "../src/EstadodeProceso"
+import { EventoES } from "../src/EventoES"
 
 describe("Inicio de la simulacion", () => {
     test("inicia con tick 0, memoria y quantum correctos si la configuracion es valida", ()=>{
@@ -200,4 +201,48 @@ describe("Carga de lotes de procesos", () => {
         expect(p1Tick3?.getEstado()).toBe(EstadodeProceso.Listo)
         expect(p2Tick3?.getEstado()).toBe(EstadodeProceso.Ejecutando)
         expect(p2Tick3?.getQuantumConsumido()).toBe(1)
+    })
+
+    test("E/S: un proceso transiciona a Bloqueado al alcanzar ticksCpuParaDisparo y libera la CPU", () => {
+        const sim = new Simulador(1000, 5); // Quantum amplio (5)
+        const evento = new EventoES(2, 3);   // Dispara tras 2 ticks de CPU, dura 3 ticks
+        sim.registrarProceso(1, 400, 5, evento);
+
+        // Tick 1: P1 ejecuta 1 ciclo
+        sim.tick();
+        const p1Tick1 = sim.getProceso(1);
+        expect(p1Tick1?.getEstado()).toBe(EstadodeProceso.Ejecutando);
+
+        // Tick 2: P1 ejecuta su 2do ciclo -> alcanza ticksCpuParaDisparo (2) -> pasa a Bloqueado
+        sim.tick();
+        const p1Tick2 = sim.getProceso(1);
+        expect(p1Tick2?.getEstado()).toBe(EstadodeProceso.Bloqueado);
+        expect(p1Tick2?.getBloqueoRestante()).toBe(3);
+
+        // Tick 3: La CPU queda libre (ningún proceso ejecutando)
+        sim.tick();
+        const procesoEnCpu = sim.getProcesos().find(
+            (p) => p.getEstado() === EstadodeProceso.Ejecutando
+        );
+        expect(procesoEnCpu).toBeUndefined();
+    });
+
+    test("E/S vs Quantum: el bloqueo por E/S tiene prioridad sobre el vencimiento del quantum", () => {
+        const sim = new Simulador(1000, 2)
+        const evento = new EventoES(2, 3)
+        sim.registrarProceso(1, 400, 5, evento)
+        sim.registrarProceso(2, 400, 5)
+        sim.tick()
+        sim.tick()
+        const p1 = sim.getProceso(1)
+        const p2 = sim.getProceso(2)
+
+        expect(p1?.getEstado()).toBe(EstadodeProceso.Bloqueado)
+        expect(p1?.getBloqueoRestante()).toBe(3)
+        expect(p2?.getEstado()).toBe(EstadodeProceso.Listo)
+
+        sim.tick()
+        const p2Post = sim.getProceso(2)
+        expect(p2Post?.getEstado()).toBe(EstadodeProceso.Ejecutando)
+        expect(p2Post?.getQuantumConsumido()).toBe(1)
     })

@@ -1,5 +1,6 @@
 import {describe, test, expect} from "vitest"
 import {Simulador} from "../src/Simulador"
+import {EstadodeProceso} from "../src/EstadodeProceso"
 
 describe("Inicio de la simulacion", () => {
     test("inicia con tick 0, memoria y quantum correctos si la configuracion es valida", ()=>{
@@ -63,17 +64,17 @@ describe("Carga de lotes de procesos", () => {
 
     test("ignora procesosi el PID ya existe", ()=>{
         const sim = new Simulador (1024, 5);
-        sim.registrarProceso(1, 256, 10);
-        sim.registrarProceso(1, 128, 5);
+        sim.registrarProceso(1, 256, 10)
+        sim.registrarProceso(1, 128, 5)
 
         expect(sim.getProcesos()).toHaveLength(1);
-        expect(sim.getProcesos()[0].getMemoriaRequerida()).toBe(256);
+        expect(sim.getProcesos()[0].getMemoriaRequerida()).toBe(256)
     });
 
     test("ignora proceso requiere mas memoria que el total del siguente", ()=>{
-        const sim = new Simulador (512, 5);
+        const sim = new Simulador (512, 5)
         sim.registrarProceso(1, 1024, 10)
-        expect(sim.getProcesos()).toHaveLength(0);
+        expect(sim.getProcesos()).toHaveLength(0)
     });
 
     test("ignora proceso con parametros no enteros o menores/iguales a cero", ()=>{
@@ -83,6 +84,20 @@ describe("Carga de lotes de procesos", () => {
         sim.registrarProceso(2, 256, 0)
         sim.registrarProceso(3, 256.5, 10)
         
-        expect(sim.getProcesos()).toHaveLength(0);
-    });
-});
+        expect(sim.getProcesos()).toHaveLength(0)
+    })
+//leer
+    test("admitirProcesos: transiciona de NUEVO a LISTO si hay memoria disponible", () => {
+        const sim = new Simulador(1000, 5);
+        sim.registrarProceso(1, 400, 10);
+        sim.registrarProceso(2, 800, 10); // Supera el espacio restante (quedan 600)
+
+        sim.tick()
+
+        const p1 = sim.getProceso(1)
+        const p2 = sim.getProceso(2)
+
+        expect(p1?.getEstado()).toBe(EstadodeProceso.Listo)
+        expect(p2?.getEstado()).toBe(EstadodeProceso.Nuevo)
+    })
+})

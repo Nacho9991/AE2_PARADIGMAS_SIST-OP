@@ -1,19 +1,20 @@
-import {BloqueMemoria} from "./BloqueMemoria";
-import {GestorMemoria} from "./GestorMemoria";
+import {BloqueMemoria} from "./BloqueMemoria"
+import {GestorMemoria} from "./GestorMemoria"
+import { EstadodeProceso } from "./EstadodeProceso"
 import {Proceso} from "./Proceso";
 
 
 export class Simulador {
     private readonly memoriaTotal: number;
     private readonly quantum: number;
-    private tick: number;
+    private tickActual: number;
     private gestorMemoria?: GestorMemoria;
     private procesos: Proceso[];
 
     constructor(memoriaTotal: number, quantum: number){
         this.memoriaTotal = memoriaTotal;
         this.quantum = quantum;
-        this.tick = 0;
+        this.tickActual = 0;
         this.procesos = [];
 
         const configuracionValida = this.esValido();
@@ -26,7 +27,10 @@ export class Simulador {
         return this.quantum
     }
     getTick(): number {
-        return this.tick;
+        return this.tickActual;
+    }
+    getTickActual(): number {
+        return this.tickActual;
     }
     getGestorMemoria(): GestorMemoria | undefined{
         return this.gestorMemoria;
@@ -39,8 +43,8 @@ export class Simulador {
         return gestor ? gestor.getBloques() : []
     } 
 
-    private setTick(nuevoTick: number): void{
-        this.tick = nuevoTick;
+    private setTickActual(nuevoTick: number): void{
+        this.tickActual = nuevoTick;
     }
     
     esValido(): boolean {
@@ -70,6 +74,21 @@ export class Simulador {
         const esAdmisible = pidValido && memoriaValida && cpuValido && !yaExiste;
 
         esAdmisible && this.setProcesos([...this.getProcesos(), new Proceso(pid, memoria, cpu)]);
+    }
+
+    private admitirProcesos(): void {
+        const gestor = this.getGestorMemoria()
+        gestor && this.getProcesos()
+            .filter((p) => p.getEstado() === EstadodeProceso.Nuevo)
+            .forEach((p) => {
+                const asignado = gestor.asignar(p.getPid(), p.getMemoriaRequerida());
+                asignado && p.admitir()
+            })
+    }
+
+    tick(): void {
+        this.admitirProcesos();
+        this.setTickActual(this.getTickActual() + 1)
     }
 
 }

@@ -1,23 +1,25 @@
 import {EstadodeProceso} from "./EstadodeProceso";
 import {IProcesoConsulta} from "./IProcesoConsulta"
 import{IProcesoControl} from "./IProcesoControl"
+import{EventoES} from "./EventoES"
 export class Proceso{
     private readonly pid: number;
     private readonly memoriaRequerida: number;
     private readonly cpuTotal: number;
     private cpuRestante: number
     private quantumConsumido: number = 0
-    private bloqueoRestante: number
-    private estado: EstadodeProceso
+    private bloqueoRestante: number=0
+    private estado?: EventoES
 
-    constructor(pid:number, memoriaRequerida:number, cpuTotal: number) {
+    constructor(pid:number, memoriaRequerida:number, cpuTotal: number, evento?: EventoES) {
         this.pid = pid;
         this.memoriaRequerida = memoriaRequerida;
         this.cpuTotal = cpuTotal;
         this.cpuRestante = cpuTotal
         this.quantumConsumido = 0
         this.bloqueoRestante = 0
-        this.estado = EstadodeProceso.Nuevo;
+        this.estado = EstadodeProceso.Nuevo
+        this.evento = evento
     }
 
     getPid(): number {
@@ -38,6 +40,9 @@ export class Proceso{
     getQuantumConsumido(): number {
     return this.quantumConsumido;
     }
+    getEvento(): EventoES | undefined {
+        return this.evento;
+    }
     private setQuantumConsumido(valor: number): void {
         this.quantumConsumido = valor
     }
@@ -56,6 +61,7 @@ export class Proceso{
     getBloqueoRestante(): number {
     return this.bloqueoRestante;
     }
+
     private setEstado(nuevoEstado: EstadodeProceso): void {
         this.estado = nuevoEstado;
     }
@@ -85,6 +91,12 @@ export class Proceso{
     despachar(): void {
         const puedeDespachar = this.getEstado() === EstadodeProceso.Listo;
         puedeDespachar && this.setEstado(EstadodeProceso.Ejecutando)
+    }
+    bloquear(): void {
+        const puedeBloquear = this.getEstado() === EstadodeProceso.Ejecutando
+        puedeBloquear && this.evento && (this.bloqueoRestante = this.evento.getDuracion())
+        puedeBloquear && this.setEstado(EstadodeProceso.Bloqueado)
+        puedeBloquear && this.resetQuantum()
     }
     terminar(): void {
         const puedeTerminar = this.getEstado() === EstadodeProceso.Ejecutando

@@ -1,6 +1,7 @@
 import { describe, test, expect} from "vitest"
 import { Proceso } from "../src/Proceso"
 import {EstadodeProceso} from "../src/EstadodeProceso"
+import {EventoES} from "../src/EventoES"
 
 describe("Proceso", () => {
     test("verifica el PID, la memoria requerida y el tiempo total de cpu", () => {
@@ -77,4 +78,28 @@ describe("estado inicial", () => {
         const p = new Proceso(1, 200, 5)
         expect(p.getBloqueoRestante()).toBe(0)
     })
-});
+
+describe("Transicion bloquear() y estado Bloqueado", () => {
+    test("transiciona de Ejecutando a Bloqueado, asigna duracion a bloqueoRestante y resetea quantum", () => {
+        const evento = new EventoES(2, 3)
+        const p = new Proceso(1, 200, 5, evento)
+        p.admitir()
+        p.despachar()
+        p.ejecutar()
+        expect(p.getEstado()).toBe(EstadodeProceso.Ejecutando);
+        expect(p.getQuantumConsumido()).toBe(1)
+        p.bloquear()
+        expect(p.getEstado()).toBe(EstadodeProceso.Bloqueado)
+        expect(p.getBloqueoRestante()).toBe(3)
+        expect(p.getQuantumConsumido()).toBe(0)
+    })
+
+    test("ignora la transicion a Bloqueado si el proceso no está en estado Ejecutando", () => {
+        const evento = new EventoES(2, 3)
+        const p = new Proceso(1, 200, 5, evento)
+        p.bloquear()
+        expect(p.getEstado()).toBe(EstadodeProceso.Nuevo);
+        expect(p.getBloqueoRestante()).toBe(0)
+    })
+})
+})

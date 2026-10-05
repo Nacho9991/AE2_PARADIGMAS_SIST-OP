@@ -95,8 +95,13 @@ export class Simulador {
             ? this.getProcesos().find((p) => p.getEstado() === EstadodeProceso.Listo)
             : undefined
         siguienteListo && siguienteListo.despachar()
-        const actual = enEjecucion || siguienteListo;
-        actual && actual.ejecutar();
+        const actual = enEjecucion || siguienteListo
+        actual && actual.ejecutar()
+
+        const termino = actual && actual.getCpuRestante() === 0
+        const gestor = this.getGestorMemoria()
+        termino && actual.terminar()
+        termino && gestor && gestor.liberar(actual.getPid())
     }
 
     tick(): void {

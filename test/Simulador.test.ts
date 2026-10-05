@@ -118,3 +118,17 @@ describe("Carga de lotes de procesos", () => {
         expect(p1?.getCpuRestante()).toBe(9)
         expect(sim.getTickActual()).toBe(1)
     })
+
+test("despacharYEjecutar: transiciona a Terminado y libera memoria cuando cpuRestante llega a 0", () => {
+        const sim = new Simulador(1000, 5)
+        sim.registrarProceso(1, 400, 1)
+
+        sim.tick()
+        const p1 = sim.getProceso(1)
+        const bloques = sim.getMapaMemoria()
+        expect(p1?.getEstado()).toBe(EstadodeProceso.Terminado)
+        expect(p1?.getCpuRestante()).toBe(0)
+        expect(bloques).toHaveLength(1)
+        expect(bloques[0].estaLibre()).toBe(true)
+        expect(bloques[0].getTamanio()).toBe(1000)
+    })
